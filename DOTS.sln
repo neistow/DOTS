@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DOTS.Client", "DOTS.Client\DOTS.Client.csproj", "{7EA96B42-814B-4210-BCF2-14B4D2EDAF4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DOTS.Server", "DOTS.Server\DOTS.Server.csproj", "{B6A6A56A-053F-4A21-98C1-62BD0A2CEBA5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DOTS.Shared", "DOTS.Shared\DOTS.Shared.csproj", "{5853FB89-0536-465A-82A6-5AD718D3375D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7EA96B42-814B-4210-BCF2-14B4D2EDAF4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EA96B42-814B-4210-BCF2-14B4D2EDAF4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EA96B42-814B-4210-BCF2-14B4D2EDAF4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EA96B42-814B-4210-BCF2-14B4D2EDAF4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6A6A56A-053F-4A21-98C1-62BD0A2CEBA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6A6A56A-053F-4A21-98C1-62BD0A2CEBA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6A6A56A-053F-4A21-98C1-62BD0A2CEBA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6A6A56A-053F-4A21-98C1-62BD0A2CEBA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5853FB89-0536-465A-82A6-5AD718D3375D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5853FB89-0536-465A-82A6-5AD718D3375D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5853FB89-0536-465A-82A6-5AD718D3375D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5853FB89-0536-465A-82A6-5AD718D3375D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

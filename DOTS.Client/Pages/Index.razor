@@ -1,0 +1,155 @@
+﻿@page "/"
+
+@using Blazor.Extensions.Canvas
+@using Blazor.Extensions.Canvas.Canvas2D
+@using Blazor.Extensions
+@using DOTS.Shared
+@using Microsoft.AspNetCore.SignalR.Client
+
+@implements IDisposable
+@implements IAsyncDisposable
+
+@inject IJSRuntime JsRuntime;
+@inject HttpClient HttpClient;
+
+<div style="border: 2px solid black; width: 500px; height: 500px; margin: 0 auto">
+    <BECanvas Width="@CanvasWidth" Height="@CanvasHeight" @ref="_canvas"></BECanvas>
+</div>
+
+@code {
+    private HubConnection _hubConnection;
+    private List<Player> _players = new();
+    private Player _player = new() {PositionX = 250, PositionY = 250, Color = "#000000"};
+
+    private BECanvas _canvas;
+    private Canvas2DContext _context;
+
+    private int CanvasWidth { get; } = 500;
+    private int CanvasHeight { get; } = 500;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InitHubConnection();
+        await InitPlayers();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await JsRuntime.InvokeVoidAsync("startGame", DotNetObjectReference.Create(this));
+        _context = await _canvas.CreateCanvas2DAsync();
+    }
+
+    [JSInvokable]
+    public async Task GameLoop(List<string> userInputs)
+    {
+        await MovePlayer(userInputs);
+        await RenderPlayers();
+    }
+
+    private async Task MovePlayer(List<string> userInputs)
+    {
+        if (userInputs.Contains("w"))
+        {
+            _player.PositionY -= 5;
+        }
+        if (userInputs.Contains("s"))
+        {
+            _player.PositionY += 5;
+        }
+        if (userInputs.Contains("a"))
+        {
+            _player.PositionX -= 5;
+        }
+        if (userInputs.Contains("d"))
+        {
+            _player.PositionX += 5;
+        }
+
+        await _hubConnection.SendAsync(nameof(IGameHub.UpdatePosition), _player.PositionX, _player.PositionY);
+    }
+
+    private async Task RenderPlayers()
+    {
+        if (_context == null)
+        {
+            return;
+        }
+
+        await _context.ClearRectAsync(0, 0, CanvasWidth, CanvasHeight);
+
+        await RenderPlayer(_player);
+        foreach (var player in _players)
+        {
+            await RenderPlayer(player);
+        }
+    }
+
+    private async Task RenderPlayer(Player player)
+    {
+        await _context.BeginPathAsync();
+        await _context.SetFillStyleAsync(player.Color);
+        await _context.ArcAsync(player.PositionX, player.PositionY, 15, 0, Math.PI * 2);
+        await _context.FillAsync();
+        await _context.ClosePathAsync();
+    }
+
+    private async Task InitPlayers()
+    {
+        var players = await HttpClient.GetFromJsonAsync<List<Player>>("players");
+        _players = players?.Where(p => p.Id != _player.Id).ToList() ?? new List<Player>();
+    }
+
+    private async Task InitHubConnection()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:3001/gamehub")
+            .Build();
+
+        _hubConnection.On<Player>(nameof(IGameClient.PlayerJoined), player => { _players.Add(player); });
+
+        _hubConnection.On<Player>(nameof(IGameClient.PlayerLeft), player =>
+        {
+            var connectedPlayer = _players.Find(p => p.Id == player.Id);
+            if (connectedPlayer != null)
+            {
+                _players.Remove(connectedPlayer);
+            }
+        });
+
+        _hubConnection.On<Player>(nameof(IGameClient.PlayerPositionUpdated), player =>
+        {
+            var connectedPlayer = _players.Find(p => p.Id == player.Id);
+            if (connectedPlayer == null)
+            {
+                return;
+            }
+
+            connectedPlayer.PositionX = player.PositionX;
+            connectedPlayer.PositionY = player.PositionY;
+        });
+
+        _hubConnection.On<Player>(nameof(IGameClient.ReceiveSelf), player => { _player = player; });
+
+        await _hubConnection.StartAsync();
+    }
+
+    public void Dispose()
+    {
+        _context?.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("stopGame");
+        if (_hubConnection != null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+
+}

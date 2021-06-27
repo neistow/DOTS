@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>DOTS</title>
+    <base href="/"/>
+    <link href="/index.css" rel="stylesheet"/>
+</head>
+
+<body>
+<div id="app">Loading...</div>
+<script src="_framework/blazor.webassembly.js"></script>
+<script src="_content/Blazor.Extensions.Canvas/blazor.extensions.canvas.js"></script>
+
+<script>
+    const userInputs = [];
+    let gameIsRunning = false;
+    let game;
+
+    function handleInput(event) {
+        if (event.type === "keydown" && !userInputs.includes(event.key)) {
+            userInputs.push(event.key.toLowerCase());
+        }
+
+        if (event.type === "keyup") {
+            for (let i = 0; i < userInputs.length; i++) {
+                if (userInputs[i] === event.key.toLowerCase()) {
+                    userInputs.splice(i, 1);
+                    break;
+                }
+            }
+        }
+    }
+
+    async function mainLoop() {
+        if (!gameIsRunning) {
+            return;
+        }
+
+        requestAnimationFrame(mainLoop);
+        await game.invokeMethodAsync("GameLoop", userInputs);
+    }
+
+    async function startGame(gameInstance) {
+        game = gameInstance;
+        gameIsRunning = true;
+
+        addEventListener("keydown", handleInput);
+        addEventListener("keyup", handleInput);
+        
+        await mainLoop();
+    }
+
+    function stopGame() {
+        game = null;
+        gameIsRunning = false;
+
+        removeEventListener("keydown", handleInput);
+        removeEventListener("keyup", handleInput);
+    }
+</script>
+</body>
+
+</html>
